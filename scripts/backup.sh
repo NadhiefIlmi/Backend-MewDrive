@@ -77,8 +77,7 @@ echo "${LOG_PREFIX} [2/3] Upload database backup ke Backblaze B2..."
 
 if rclone copy "${DUMP_FILE}" "${B2_DB_PATH}/" \
     --progress \
-    --stats-one-line \
-    2>&1 | grep -E "(Transferred|ERROR|NOTICE)"; then
+    --stats-one-line; then
     echo "${LOG_PREFIX} ✓ Database backup ter-upload ke B2"
 else
     echo "${LOG_PREFIX} ✗ Upload database ke B2 GAGAL"
@@ -96,8 +95,7 @@ if [ -d "${STORAGE_PATH}" ]; then
     if rclone sync "${STORAGE_PATH}/" "${B2_STORAGE_PATH}/" \
         --progress \
         --stats-one-line \
-        --backup-dir "${B2_REMOTE}:${B2_BUCKET}/deleted/${DATE}" \
-        2>&1 | grep -E "(Transferred|ERROR|NOTICE)"; then
+        --backup-dir "${B2_REMOTE}:${B2_BUCKET}/deleted/${DATE}"; then
         echo "${LOG_PREFIX} ✓ File storage ter-sync ke B2"
     else
         echo "${LOG_PREFIX} ✗ Sync storage ke B2 GAGAL"
