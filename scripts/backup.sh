@@ -22,12 +22,12 @@ set -euo pipefail  # exit on error, undefined var, pipe fail
 # ─── Konfigurasi — EDIT SESUAI SERVER KAMU ────────────────────────────────────
 
 # Database
-DB_URL="${DATABASE_URL:-postgres://myuser:mypassword@localhost:5432/mydrive}"
-DB_NAME="mydrive"                    # nama database
+DB_URL="${DATABASE_URL:-postgres://nadhif:password@localhost:5432/mewdrive}"
+DB_NAME="mewdrive"                   # nama database
 
 # Storage
-STORAGE_PATH="/var/mydrive/storage"  # path folder file upload di VPS
-APP_PATH="/var/mydrive/backend"      # path folder backend
+STORAGE_PATH="/var/mydrive/storage/files"  # path folder file upload di VPS
+APP_PATH="/var/mydrive/Backend-MewDrive"   # path folder backend
 
 # Backup
 BACKUP_DIR="/var/backups/mydrive"    # tempat backup sementara di VPS

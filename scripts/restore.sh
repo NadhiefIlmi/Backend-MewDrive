@@ -13,9 +13,9 @@ set -euo pipefail
 
 # ─── Konfigurasi — harus sama dengan backup.sh ────────────────────────────────
 
-DB_URL="${DATABASE_URL:-postgres://myuser:mypassword@localhost:5432/mydrive}"
-DB_NAME="mydrive"
-STORAGE_PATH="/var/mydrive/storage"
+DB_URL="${DATABASE_URL:-postgres://nadhif:password@localhost:5432/mewdrive}"
+DB_NAME="mewdrive"
+STORAGE_PATH="/var/mydrive/storage/files"
 BACKUP_DIR="/var/backups/mydrive"
 B2_REMOTE="b2"
 B2_BUCKET="mydrive-backup"
