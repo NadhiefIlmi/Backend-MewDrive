@@ -1,6 +1,8 @@
 import express from 'express';
 import { UserController } from '../controllers/user.controller.js';
+import { PermissionController } from '../controllers/permission.controller.js';
 import { authenticate, requireRole } from '../middleware/auth.middleware.js';
+import { sendError } from '../utils/response.js';
 import { validate } from '../middleware/validator.js';
 import {
   listUsersValidator,
@@ -13,8 +15,28 @@ import {
 
 const router = express.Router();
 const userController = new UserController();
+const permissionController = new PermissionController();
 
-// Semua route users wajib login dan harus ADMIN
+// ─── Route publik (hanya butuh login, tidak harus ADMIN) ─────────────────────
+
+/**
+ * GET /api/users/:id/permissions — user bisa lihat permission dirinya sendiri,
+ * admin bisa lihat permission siapapun.
+ */
+router.get(
+  '/:id/permissions',
+  authenticate,
+  (req, res, next) => {
+    // Izinkan jika ADMIN atau user mengakses miliknya sendiri
+    if (req.user.role === 'ADMIN' || String(req.user.id) === String(req.params.id)) {
+      return next();
+    }
+    return sendError(res, 'FORBIDDEN', 'Insufficient permissions', 403);
+  },
+  permissionController.getUserPermissions
+);
+
+// ─── Semua route di bawah ini wajib login DAN harus ADMIN ────────────────────
 router.use(authenticate, requireRole('ADMIN'));
 
 /**
