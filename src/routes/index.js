@@ -39,6 +39,7 @@ router.get('/health', async (req, res) => {
       status:       isHealthy ? 'ok' : 'degraded',
       version:      process.env.npm_package_version ?? '1.0.0',
       environment:  config.env,
+      cicd:         'auto-deployed via GitHub Actions 🚀',
       uptime_s:     Math.floor(process.uptime()),
       timestamp:    new Date().toISOString(),
       checks: {
