@@ -22,6 +22,7 @@ import { runShareTests }    from './test-suite/test-share.mjs';
 import { runStorageTests, runPermissionTests } from './test-suite/test-storage.mjs';
 import { runSearchTests }   from './test-suite/test-search.mjs';
 import { runSecurityTests } from './test-suite/test-security.mjs';
+import { runChangePasswordTests } from './test-suite/test-change-password.mjs';
 
 const BASE = process.env.API_URL || 'http://localhost:3001/api';
 
@@ -52,15 +53,16 @@ async function run() {
 
   // Semua suite — urutan penting: auth dulu supaya token siap
   const suites = [
-    { name: 'Auth',        fn: runAuthTests },
-    { name: 'Folders',     fn: runFolderTests },
-    { name: 'Files',       fn: runFileTests },
-    { name: 'Notes',       fn: runNotesTests },
-    { name: 'Share Links', fn: runShareTests },
-    { name: 'Storage',     fn: runStorageTests },
-    { name: 'Permissions', fn: runPermissionTests },
-    { name: 'Search',      fn: runSearchTests },
-    { name: 'Security',    fn: runSecurityTests },
+    { name: 'Auth',            fn: runAuthTests },
+    { name: 'Change Password', fn: runChangePasswordTests },
+    { name: 'Folders',         fn: runFolderTests },
+    { name: 'Files',           fn: runFileTests },
+    { name: 'Notes',           fn: runNotesTests },
+    { name: 'Share Links',     fn: runShareTests },
+    { name: 'Storage',         fn: runStorageTests },
+    { name: 'Permissions',     fn: runPermissionTests },
+    { name: 'Search',          fn: runSearchTests },
+    { name: 'Security',        fn: runSecurityTests },
   ];
 
   const suiteResults = [];

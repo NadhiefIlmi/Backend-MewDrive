@@ -56,17 +56,59 @@ export class ShareService {
   }
 
   /**
-   * Resolve share link berdasarkan token (untuk halaman publik).
+   * Resolve share link berdasarkan token atau slug (untuk halaman publik).
+   * Coba token dulu — kalau tidak ditemukan, fallback ke slug.
    * Tidak butuh auth.
    */
-  async resolveToken(token) {
-    const link = await this.shareRepo.findByToken(token);
+  async resolveToken(identifier) {
+    // Coba cari sebagai token hex (32 char hex = token)
+    let link = await this.shareRepo.findByToken(identifier);
+
+    // Fallback: coba sebagai slug custom
+    if (!link) {
+      link = await this.shareRepo.findBySlug(identifier);
+    }
+
     if (!link) throw new Error('SHARE_LINK_NOT_FOUND');
     if (!link.is_active) throw new Error('SHARE_LINK_INACTIVE');
     if (link.expires_at && new Date(link.expires_at) < new Date()) {
       throw new Error('SHARE_LINK_EXPIRED');
     }
     if (link.is_trashed) throw new Error('FILE_TRASHED');
+    return link;
+  }
+
+  /**
+   * Resolve share link berdasarkan slug custom.
+   * Tidak butuh auth.
+   */
+  async resolveSlug(slug) {
+    const link = await this.shareRepo.findBySlug(slug);
+    if (!link) throw new Error('SHARE_LINK_NOT_FOUND');
+    if (!link.is_active) throw new Error('SHARE_LINK_INACTIVE');
+    if (link.expires_at && new Date(link.expires_at) < new Date()) {
+      throw new Error('SHARE_LINK_EXPIRED');
+    }
+    if (link.is_trashed) throw new Error('FILE_TRASHED');
+    return link;
+  }
+
+  /**
+   * Set atau hapus slug custom untuk share link.
+   */
+  async updateSlug(userId, linkId, slug) {
+    // Validasi format slug: hanya huruf, angka, strip, underscore; maks 100 char
+    if (slug !== null) {
+      if (!/^[a-zA-Z0-9_-]{1,100}$/.test(slug)) {
+        throw new Error('INVALID_SLUG');
+      }
+      // Cek duplikat
+      const taken = await this.shareRepo.isSlugTaken(slug, linkId);
+      if (taken) throw new Error('SLUG_TAKEN');
+    }
+
+    const link = await this.shareRepo.updateSlug(linkId, userId, slug);
+    if (!link) throw new Error('SHARE_LINK_NOT_FOUND');
     return link;
   }
 }

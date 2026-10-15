@@ -11,6 +11,7 @@ import {
   updateStatusValidator,
   updateStorageQuotaValidator,
   resetPasswordValidator,
+  changePasswordValidator,
 } from '../validators/user.validator.js';
 
 const router = express.Router();
@@ -18,6 +19,18 @@ const userController = new UserController();
 const permissionController = new PermissionController();
 
 // ─── Route publik (hanya butuh login, tidak harus ADMIN) ─────────────────────
+
+/**
+ * PATCH /api/users/me/password — user ganti password sendiri (butuh password lama)
+ * Harus didefinisikan SEBELUM router.use(requireRole('ADMIN'))
+ */
+router.patch(
+  '/me/password',
+  authenticate,
+  changePasswordValidator,
+  validate,
+  userController.changePassword
+);
 
 /**
  * GET /api/users/:id/permissions — user bisa lihat permission dirinya sendiri,

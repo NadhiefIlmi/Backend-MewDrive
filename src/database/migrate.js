@@ -11,6 +11,7 @@ import { up as createShareLinks }     from './migrations/009_create_share_links_
 import { up as cleanupPermissions }   from './migrations/010_cleanup_unused_permissions.js';
 import { up as createRevokedTokens }  from './migrations/011_create_revoked_tokens_table.js';
 import { up as addPerfIndexes }        from './migrations/012_add_performance_indexes.js';
+import { up as addSlugToShareLinks }   from './migrations/013_add_slug_to_share_links.js';
 
 const migrations = [
   { name: '001_create_roles_table',              up: createRoles },
@@ -25,6 +26,7 @@ const migrations = [
   { name: '010_cleanup_unused_permissions',      up: cleanupPermissions },
   { name: '011_create_revoked_tokens_table',     up: createRevokedTokens },
   { name: '012_add_performance_indexes',         up: addPerfIndexes },
+  { name: '013_add_slug_to_share_links',         up: addSlugToShareLinks },
 ];
 
 async function runMigrations() {

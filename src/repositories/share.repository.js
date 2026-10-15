@@ -11,7 +11,7 @@ export class ShareRepository {
   async findByToken(token) {
     const result = await query(
       `SELECT
-         sl.id, sl.token, sl.is_active, sl.expires_at, sl.created_at,
+         sl.id, sl.token, sl.slug, sl.is_active, sl.expires_at, sl.created_at,
          f.id AS file_id, f.name, f.original_name, f.mime_type,
          f.extension, f.size, f.storage_path, f.is_trashed
        FROM share_links sl
@@ -22,10 +22,45 @@ export class ShareRepository {
     return result.rows[0] ?? null;
   }
 
+  // Cari share link berdasarkan slug (custom alias)
+  async findBySlug(slug) {
+    const result = await query(
+      `SELECT
+         sl.id, sl.token, sl.slug, sl.is_active, sl.expires_at, sl.created_at,
+         f.id AS file_id, f.name, f.original_name, f.mime_type,
+         f.extension, f.size, f.storage_path, f.is_trashed
+       FROM share_links sl
+       JOIN files f ON sl.file_id = f.id
+       WHERE sl.slug = $1`,
+      [slug]
+    );
+    return result.rows[0] ?? null;
+  }
+
+  // Cek apakah slug sudah dipakai (exclude id tertentu untuk update)
+  async isSlugTaken(slug, excludeId = null) {
+    const result = await query(
+      `SELECT id FROM share_links WHERE slug = $1 AND ($2::int IS NULL OR id != $2)`,
+      [slug, excludeId]
+    );
+    return result.rows.length > 0;
+  }
+
+  // Update slug
+  async updateSlug(id, userId, slug) {
+    const result = await query(
+      `UPDATE share_links SET slug = $1
+       WHERE id = $2 AND user_id = $3
+       RETURNING id, token, slug, is_active, expires_at`,
+      [slug, id, userId]
+    );
+    return result.rows[0] ?? null;
+  }
+
   // Cari share link aktif milik user untuk file tertentu
   async findByFileAndUser(fileId, userId) {
     const result = await query(
-      `SELECT id, token, is_active, expires_at, created_at
+      `SELECT id, token, slug, is_active, expires_at, created_at
        FROM share_links
        WHERE file_id = $1 AND user_id = $2
        ORDER BY created_at DESC
@@ -39,7 +74,7 @@ export class ShareRepository {
   async findByUser(userId) {
     const result = await query(
       `SELECT
-         sl.id, sl.token, sl.is_active, sl.expires_at, sl.created_at,
+         sl.id, sl.token, sl.slug, sl.is_active, sl.expires_at, sl.created_at,
          f.id AS file_id, f.name, f.extension, f.size, f.mime_type
        FROM share_links sl
        JOIN files f ON sl.file_id = f.id
@@ -50,13 +85,13 @@ export class ShareRepository {
     return result.rows;
   }
 
-  // Buat share link baru (atau reuse jika sudah ada)
+  // Buat share link baru
   async create(fileId, userId, expiresAt = null) {
     const token = this.#generateToken();
     const result = await query(
       `INSERT INTO share_links (file_id, user_id, token, is_active, expires_at)
        VALUES ($1, $2, $3, true, $4)
-       RETURNING id, token, is_active, expires_at, created_at`,
+       RETURNING id, token, slug, is_active, expires_at, created_at`,
       [fileId, userId, token, expiresAt]
     );
     return result.rows[0];

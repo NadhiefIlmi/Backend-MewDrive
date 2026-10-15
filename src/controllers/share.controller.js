@@ -13,6 +13,8 @@ const handleError = (res, next, err) => {
     SHARE_LINK_NOT_FOUND:  ['SHARE_LINK_NOT_FOUND',  'Share link tidak ditemukan',               404],
     SHARE_LINK_INACTIVE:   ['SHARE_LINK_INACTIVE',   'Share link tidak aktif',                  410],
     SHARE_LINK_EXPIRED:    ['SHARE_LINK_EXPIRED',     'Share link sudah kadaluarsa',             410],
+    INVALID_SLUG:          ['INVALID_SLUG',           'Slug hanya boleh huruf, angka, strip (-), dan underscore (_), maks 100 karakter', 400],
+    SLUG_TAKEN:            ['SLUG_TAKEN',             'Slug sudah dipakai oleh link lain',        409],
   };
   const entry = map[err.message];
   if (entry) return sendError(res, entry[0], entry[1], entry[2]);
@@ -62,73 +64,131 @@ export const deleteShareLink = async (req, res, next) => {
   } catch (e) { handleError(res, next, e); }
 };
 
+// PATCH /api/share/:id/slug
+// Body: { slug: string | null }  — null untuk hapus slug
+export const updateShareLinkSlug = async (req, res, next) => {
+  try {
+    const { slug } = req.body;
+    // slug boleh null (hapus), tapi kalau dikirim harus string
+    if (slug !== null && typeof slug !== 'string') {
+      return sendError(res, 'VALIDATION_ERROR', 'slug harus berupa string atau null', 400);
+    }
+    // Trim & lowercase untuk konsistensi
+    const normalized = slug ? slug.trim() : null;
+    const link = await svc.updateSlug(req.user.id, Number(req.params.id), normalized);
+    return sendSuccess(res, link);
+  } catch (e) { handleError(res, next, e); }
+};
+
 // ─── Public endpoints (tanpa auth) ────────────────────────────────────────────
 
-// GET /api/public/share/:token
-// Resolve token → return metadata file
+// ─── Shared stream helpers ────────────────────────────────────────────────────
+function _streamPreview(link, res, next) {
+  const PREVIEWABLE = [
+    'image/', 'video/', 'audio/',
+    'application/pdf',
+    'text/plain', 'text/csv', 'text/html',
+    'application/json', 'application/xml',
+  ];
+  const isPreviewable = PREVIEWABLE.some(p => link.mime_type.startsWith(p));
+  if (!isPreviewable) {
+    return res.json({ success: true, data: { previewable: false, name: link.name } });
+  }
+  const filePath = link.storage_path;
+  if (!fs.existsSync(filePath)) {
+    return sendError(res, 'FILE_NOT_FOUND', 'File fisik tidak ditemukan', 404);
+  }
+  res.set({
+    'Content-Type':        link.mime_type,
+    'Content-Disposition': `inline; filename="${encodeURIComponent(link.name)}"`,
+    'Cache-Control':       'public, max-age=300',
+  });
+  fs.createReadStream(filePath).pipe(res);
+}
+
+function _streamDownload(link, res) {
+  const filePath = link.storage_path;
+  if (!fs.existsSync(filePath)) {
+    return sendError(res, 'FILE_NOT_FOUND', 'File fisik tidak ditemukan', 404);
+  }
+  res.set({
+    'Content-Type':        link.mime_type,
+    'Content-Disposition': `attachment; filename="${encodeURIComponent(link.name)}"`,
+    'Content-Length':      link.size,
+  });
+  fs.createReadStream(filePath).pipe(res);
+}
+
+// GET /api/share/public/:token
+// Resolve token atau slug → return metadata file
 export const getPublicShareInfo = async (req, res, next) => {
   try {
     const link = await svc.resolveToken(req.params.token);
     return sendSuccess(res, {
-      token:       link.token,
-      file_id:     link.file_id,
-      name:        link.name,
+      token:         link.token,
+      slug:          link.slug ?? null,
+      file_id:       link.file_id,
+      name:          link.name,
       original_name: link.original_name,
-      mime_type:   link.mime_type,
-      extension:   link.extension,
-      size:        link.size,
-      expires_at:  link.expires_at,
+      mime_type:     link.mime_type,
+      extension:     link.extension,
+      size:          link.size,
+      expires_at:    link.expires_at,
     });
   } catch (e) { handleError(res, next, e); }
 };
 
-// GET /api/public/share/:token/preview
-// Inline preview via share token — tidak butuh JWT
+// GET /api/share/public/slug/:slug
+// Resolve slug custom → return metadata file (sama seperti token tapi by slug)
+export const getPublicShareInfoBySlug = async (req, res, next) => {
+  try {
+    const link = await svc.resolveSlug(req.params.slug);
+    return sendSuccess(res, {
+      token:         link.token,
+      slug:          link.slug,
+      file_id:       link.file_id,
+      name:          link.name,
+      original_name: link.original_name,
+      mime_type:     link.mime_type,
+      extension:     link.extension,
+      size:          link.size,
+      expires_at:    link.expires_at,
+    });
+  } catch (e) { handleError(res, next, e); }
+};
+
+// GET /api/share/public/slug/:slug/preview
+export const publicPreviewBySlug = async (req, res, next) => {
+  try {
+    const link = await svc.resolveSlug(req.params.slug);
+    req.params.token = link.token; // reuse logic preview
+    req.resolvedLink = link;
+    return _streamPreview(link, res, next);
+  } catch (e) { handleError(res, next, e); }
+};
+
+// GET /api/share/public/slug/:slug/download
+export const publicDownloadBySlug = async (req, res, next) => {
+  try {
+    const link = await svc.resolveSlug(req.params.slug);
+    return _streamDownload(link, res, next);
+  } catch (e) { handleError(res, next, e); }
+};
+
+// GET /api/share/public/:token/preview
+// Inline preview via share token atau slug — tidak butuh JWT
 export const publicPreview = async (req, res, next) => {
   try {
     const link = await svc.resolveToken(req.params.token);
-
-    const PREVIEWABLE = [
-      'image/', 'video/', 'audio/',
-      'application/pdf',
-      'text/plain', 'text/csv', 'text/html',
-      'application/json', 'application/xml',
-    ];
-    const isPreviewable = PREVIEWABLE.some(p => link.mime_type.startsWith(p));
-    if (!isPreviewable) {
-      return res.json({ success: true, data: { previewable: false, name: link.name } });
-    }
-
-    const filePath = link.storage_path;
-    if (!fs.existsSync(filePath)) {
-      return sendError(res, 'FILE_NOT_FOUND', 'File fisik tidak ditemukan', 404);
-    }
-
-    res.set({
-      'Content-Type':        link.mime_type,
-      'Content-Disposition': `inline; filename="${encodeURIComponent(link.name)}"`,
-      'Cache-Control':       'public, max-age=300',
-    });
-    fs.createReadStream(filePath).pipe(res);
+    return _streamPreview(link, res, next);
   } catch (e) { handleError(res, next, e); }
 };
 
-// GET /api/public/share/:token/download
-// Force-download via share token — tidak butuh JWT
+// GET /api/share/public/:token/download
+// Force-download via share token atau slug — tidak butuh JWT
 export const publicDownload = async (req, res, next) => {
   try {
     const link = await svc.resolveToken(req.params.token);
-
-    const filePath = link.storage_path;
-    if (!fs.existsSync(filePath)) {
-      return sendError(res, 'FILE_NOT_FOUND', 'File fisik tidak ditemukan', 404);
-    }
-
-    res.set({
-      'Content-Type':        link.mime_type,
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(link.name)}"`,
-      'Content-Length':      link.size,
-    });
-    fs.createReadStream(filePath).pipe(res);
+    return _streamDownload(link, res);
   } catch (e) { handleError(res, next, e); }
 };

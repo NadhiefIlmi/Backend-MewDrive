@@ -77,6 +77,22 @@ export const resetPasswordValidator = [
     .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
 ];
 
+// ─── Change Own Password (user yang login, butuh password lama) ───────────────
+export const changePasswordValidator = [
+  body('current_password')
+    .notEmpty().withMessage('Password saat ini wajib diisi'),
+
+  body('new_password')
+    .notEmpty().withMessage('Password baru wajib diisi')
+    .isLength({ min: 6 }).withMessage('Password baru minimal 6 karakter')
+    .custom((value, { req }) => {
+      if (value === req.body.current_password) {
+        throw new Error('Password baru tidak boleh sama dengan password lama');
+      }
+      return true;
+    }),
+];
+
 // ─── List Users (query params) ────────────────────────────────────────────────
 export const listUsersValidator = [
   query('status')

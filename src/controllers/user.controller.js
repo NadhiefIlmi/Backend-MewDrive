@@ -129,6 +129,24 @@ export class UserController {
     }
   };
 
+  // PATCH /api/users/me/password
+  // User ganti password sendiri — wajib input password lama
+  changePassword = async (req, res, next) => {
+    try {
+      const { current_password, new_password } = req.body;
+      await userService.changePassword(req.user.id, current_password, new_password);
+      return sendSuccess(res, null, 'Password berhasil diubah');
+    } catch (error) {
+      if (error.message === 'WRONG_CURRENT_PASSWORD') {
+        return sendError(res, 'WRONG_CURRENT_PASSWORD', 'Password saat ini salah', 400);
+      }
+      if (error.message === 'USER_NOT_FOUND') {
+        return sendError(res, 'USER_NOT_FOUND', 'User tidak ditemukan', 404);
+      }
+      next(error);
+    }
+  };
+
   // DELETE /api/users/:id
   deleteUser = async (req, res, next) => {
     try {

@@ -94,6 +94,21 @@ export class UserService {
     await userRepository.updatePassword(id, password_hash);
   }
 
+  // ─── Change Own Password (user yang login, verifikasi password lama) ──────
+
+  async changePassword(id, currentPassword, newPassword) {
+    // Ambil user BESERTA password_hash-nya untuk verifikasi
+    const user = await userRepository.findByIdWithPassword(id);
+    if (!user) throw new Error('USER_NOT_FOUND');
+
+    // Verifikasi password lama
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) throw new Error('WRONG_CURRENT_PASSWORD');
+
+    const password_hash = await bcrypt.hash(newPassword, config.security.bcryptRounds);
+    await userRepository.updatePassword(id, password_hash);
+  }
+
   // ─── Enable / Disable ─────────────────────────────────────────────────────
 
   async updateUserStatus(id, status) {

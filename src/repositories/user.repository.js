@@ -38,6 +38,21 @@ export class UserRepository {
     return result.rows[0];
   }
 
+  // findByIdWithPassword: include password_hash — khusus untuk verifikasi password lama
+  async findByIdWithPassword(id) {
+    const result = await query(
+      `SELECT u.id, u.name, u.email, u.password_hash, u.status,
+              u.storage_quota, u.storage_used, u.role_id,
+              u.created_at, u.updated_at, u.last_login_at,
+              r.name AS role_name
+       FROM users u
+       JOIN roles r ON u.role_id = r.id
+       WHERE u.id = $1`,
+      [id]
+    );
+    return result.rows[0];
+  }
+
   async updateLastLogin(userId) {
     await query(
       'UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1',
