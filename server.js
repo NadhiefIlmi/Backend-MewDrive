@@ -3,6 +3,8 @@ import { config } from './src/config/env.js';
 import pool from './src/config/database.js';
 import { TokenRepository } from './src/repositories/token.repository.js';
 import { validateEnv } from './src/config/validate-env.js';
+import { startScheduler } from './src/scheduler.js';
+
 
 // Validasi env vars sebelum apapun — gagal cepat dengan pesan yang jelas
 validateEnv();
@@ -60,6 +62,10 @@ async function startServer() {
     console.log(`✓ API URL: ${config.apiUrl}/api`);
     console.log(`✓ Health check: http://localhost:${PORT}/api/health\n`);
   });
+
+  // Start report scheduler
+  startScheduler();
+
 
   // ─── Server timeouts ──────────────────────────────────────────────────────
   // keepAliveTimeout harus lebih panjang dari timeout load balancer (biasanya 60s).

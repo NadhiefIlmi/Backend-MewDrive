@@ -1,6 +1,6 @@
-# MyDrive Backend API
+# MewDrive Backend API
 
-Backend API untuk MyDrive — Personal File Management System.
+Backend API untuk MewDrive — Personal File Management System.
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ cp .env.example .env
 # Edit .env — minimal isi DATABASE_URL dan JWT_SECRET
 
 # 3. Buat database
-psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE mydrive;"
+psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE MewDrive;"
 
 # 4. Jalankan migration
 npm run migrate
@@ -251,17 +251,17 @@ pm2 status
 curl http://localhost:3001/api/health
 
 # Lihat log
-pm2 logs mydrive-backend
+pm2 logs MewDrive-backend
 ```
 
 ### PM2 Commands
 
 ```bash
 pm2 reload ecosystem.config.cjs --env production  # reload tanpa downtime
-pm2 stop mydrive-backend                           # stop
-pm2 restart mydrive-backend                        # restart
+pm2 stop MewDrive-backend                           # stop
+pm2 restart MewDrive-backend                        # restart
 pm2 monit                                          # dashboard monitoring
-pm2 logs mydrive-backend --lines 100               # 100 baris log terakhir
+pm2 logs MewDrive-backend --lines 100               # 100 baris log terakhir
 ```
 
 ---
@@ -302,7 +302,7 @@ Test suite secara otomatis cleanup semua data yang dibuat selama testing.
 npm run check:prod
 
 # Cek log
-pm2 logs mydrive-backend --err
+pm2 logs MewDrive-backend --err
 ```
 
 **Database connection error**

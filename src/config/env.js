@@ -62,4 +62,7 @@ export const config = {
     fileTtlMs: parseInt(process.env.CACHE_FILE_TTL_MS) || 30000,     // 30 detik
     storageTtlMs: parseInt(process.env.CACHE_STORAGE_TTL_MS) || 10000, // 10 detik
   },
+
+  telegramEncryptionKey: process.env.TELEGRAM_ENCRYPTION_KEY ?? '',
 };
+

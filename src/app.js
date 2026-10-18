@@ -36,15 +36,27 @@ app.use(helmet({
   frameguard: { action: 'sameorigin' },
 }));
 
-// CORS — development: izinkan semua, production: hanya dari FRONTEND_URL
-const allowedOrigins = config.env === 'development'
-  ? true // izinkan semua origin di development
-  : [config.frontendUrl].filter(Boolean); // production: hanya frontend URL
+// CORS — development: izinkan semua, production: hanya dari FRONTEND_URL atau CORS_ORIGINS
+// Task 14: support CORS_ORIGINS env untuk multi-domain production
+const buildAllowedOrigins = () => {
+  if (config.env === 'development') return true; // izinkan semua origin di development
+
+  // Support comma-separated CORS_ORIGINS untuk multi-domain
+  const corsOrigins = process.env.CORS_ORIGINS;
+  if (corsOrigins) {
+    return corsOrigins.split(',').map(o => o.trim()).filter(Boolean);
+  }
+  return [config.frontendUrl].filter(Boolean);
+};
+
+const allowedOrigins = buildAllowedOrigins();
 
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
-  exposedHeaders: ['Content-Disposition', 'Content-Length'],
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Disposition', 'Content-Length', 'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset'],
 }));
 
 // ─── Logging ──────────────────────────────────────────────────────────────────

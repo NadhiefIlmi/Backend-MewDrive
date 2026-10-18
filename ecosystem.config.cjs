@@ -12,8 +12,8 @@
  * Cara pakai:
  *   pm2 start ecosystem.config.cjs          # start
  *   pm2 reload ecosystem.config.cjs         # reload tanpa downtime
- *   pm2 stop mydrive-backend                # stop
- *   pm2 logs mydrive-backend                # lihat log
+ *   pm2 stop MewDrive-backend                # stop
+ *   pm2 logs MewDrive-backend                # lihat log
  *   pm2 monit                               # dashboard monitoring
  *   pm2 startup                             # auto-start saat server reboot
  */
@@ -21,7 +21,7 @@
 module.exports = {
   apps: [
     {
-      name: 'mydrive-backend',
+      name: 'MewDrive-backend',
       script: 'server.js',
 
       // ─── Instance & scaling ─────────────────────────────────────────────────

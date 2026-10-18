@@ -12,6 +12,11 @@ import { up as cleanupPermissions }   from './migrations/010_cleanup_unused_perm
 import { up as createRevokedTokens }  from './migrations/011_create_revoked_tokens_table.js';
 import { up as addPerfIndexes }        from './migrations/012_add_performance_indexes.js';
 import { up as addSlugToShareLinks }   from './migrations/013_add_slug_to_share_links.js';
+import { up as createTasks }           from './migrations/014_create_tasks_table.js';
+import { up as createTaskFiles }       from './migrations/015_create_task_files_table.js';
+import { up as createTelegramTables }  from './migrations/016_create_telegram_tables.js';
+import { up as createNotifTables }     from './migrations/017_create_notification_tables.js';
+import { up as createAuditLogs }       from './migrations/018_create_audit_logs_table.js';
 
 const migrations = [
   { name: '001_create_roles_table',              up: createRoles },
@@ -27,6 +32,11 @@ const migrations = [
   { name: '011_create_revoked_tokens_table',     up: createRevokedTokens },
   { name: '012_add_performance_indexes',         up: addPerfIndexes },
   { name: '013_add_slug_to_share_links',         up: addSlugToShareLinks },
+  { name: '014_create_tasks_table',              up: createTasks },
+  { name: '015_create_task_files_table',         up: createTaskFiles },
+  { name: '016_create_telegram_tables',          up: createTelegramTables },
+  { name: '017_create_notification_tables',      up: createNotifTables },
+  { name: '018_create_audit_logs_table',         up: createAuditLogs },
 ];
 
 async function runMigrations() {

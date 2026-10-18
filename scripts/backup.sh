@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# MyDrive Backup Script
+# MewDrive Backup Script
 #
 # Backup otomatis setiap hari:
 #   1. Database PostgreSQL → pg_dump → compress → upload ke Backblaze B2
@@ -14,7 +14,7 @@
 #   4. Beri permission: chmod +x backup.sh
 #   5. Test manual: ./backup.sh
 #   6. Jadwalkan cronjob: crontab -e
-#      → 0 2 * * * /var/mydrive/backend/scripts/backup.sh >> /var/log/mydrive-backup.log 2>&1
+#      → 0 2 * * * /var/MewDrive/backend/scripts/backup.sh >> /var/log/MewDrive-backup.log 2>&1
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -euo pipefail  # exit on error, undefined var, pipe fail
@@ -26,17 +26,17 @@ DB_URL="${DATABASE_URL:-postgres://nadhif:password@localhost:5432/mewdrive}"
 DB_NAME="mewdrive"                   # nama database
 
 # Storage
-STORAGE_PATH="/var/mydrive/storage/files"  # path folder file upload di VPS
-APP_PATH="/var/mydrive/Backend-MewDrive"   # path folder backend
+STORAGE_PATH="/var/MewDrive/storage/files"  # path folder file upload di VPS
+APP_PATH="/var/MewDrive/Backend-MewDrive"   # path folder backend
 
 # Backup
-BACKUP_DIR="/var/backups/mydrive"    # tempat backup sementara di VPS
+BACKUP_DIR="/var/backups/MewDrive"    # tempat backup sementara di VPS
 RETENTION_DAYS=7                     # simpan backup berapa hari
 
 # Backblaze B2 via rclone
 # Nama remote harus sama dengan yang dikonfigurasi di: rclone config
 B2_REMOTE="b2"                       # nama remote rclone
-B2_BUCKET="mydrive-backup"           # nama bucket B2 kamu
+B2_BUCKET="MewDrive-backup"           # nama bucket B2 kamu
 B2_DB_PATH="${B2_REMOTE}:${B2_BUCKET}/database"
 B2_STORAGE_PATH="${B2_REMOTE}:${B2_BUCKET}/files"
 
@@ -48,7 +48,7 @@ LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
 
 echo ""
 echo "═══════════════════════════════════════════"
-echo "${LOG_PREFIX} MyDrive Backup dimulai"
+echo "${LOG_PREFIX} MewDrive Backup dimulai"
 echo "═══════════════════════════════════════════"
 
 # Buat direktori backup kalau belum ada

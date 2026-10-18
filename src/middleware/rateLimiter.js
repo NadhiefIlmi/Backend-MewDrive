@@ -78,3 +78,38 @@ export const shareRateLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => req.ip,
 });
+
+// ─── Task rate limiter ─────────────────────────────────────────────────────────
+// 60 task baru per menit per user — proteksi dari spam create
+export const taskRateLimiter = rateLimit({
+  windowMs: 60_000,
+  max: isDevOrTest ? 200 : 60,
+  message: {
+    success: false,
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Terlalu banyak task dibuat. Tunggu sebentar.',
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `task_${req.user?.id ?? req.ip}`,
+});
+
+// ─── Telegram rate limiter ─────────────────────────────────────────────────────
+// 10 request per jam per user — cegah brute-force token orang lain
+export const telegramRateLimiter = rateLimit({
+  windowMs: 60 * 60_000,  // 1 jam
+  max: isDevOrTest ? 100 : 10,
+  message: {
+    success: false,
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Terlalu banyak percobaan koneksi Telegram. Coba lagi dalam 1 jam.',
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `telegram_${req.user?.id ?? req.ip}`,
+});
+

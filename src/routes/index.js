@@ -9,6 +9,8 @@ import searchRoutes from './search.routes.js';
 import storageRoutes from './storage.routes.js';
 import notesRoutes from './notes.routes.js';
 import shareRoutes from './share.routes.js';
+import taskRoutes from './task.routes.js';
+import telegramRoutes from './telegram.routes.js';
 import { pool } from '../config/database.js';
 import { config } from '../config/env.js';
 
@@ -65,5 +67,7 @@ router.use('/search', searchRoutes);
 router.use('/storage', storageRoutes);
 router.use('/notes', notesRoutes);
 router.use('/share', shareRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/telegram', telegramRoutes);
 
 export default router;

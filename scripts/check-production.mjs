@@ -185,7 +185,7 @@ const storagePath = env.LOCAL_STORAGE_PATH ?? './storage/files';
 ok(`Storage path: ${storagePath}`);
 
 if (isProduction && storagePath.startsWith('./')) {
-  warn('Storage path relatif', 'Di production gunakan path absolut: /var/mydrive/storage');
+  warn('Storage path relatif', 'Di production gunakan path absolut: /var/MewDrive/storage');
 }
 
 const resolvedStorage = path.resolve(path.join(__dirname, '..'), storagePath);

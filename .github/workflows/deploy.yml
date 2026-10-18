@@ -24,7 +24,7 @@ jobs:
             set -e
 
             echo ">>> Masuk ke direktori backend"
-            cd /var/mydrive/Backend-MewDrive
+            cd /var/MewDrive/Backend-MewDrive
 
             echo ">>> Pull latest code dari main"
             git pull origin main
@@ -36,7 +36,7 @@ jobs:
             NODE_ENV=production node src/database/migrate.js
 
             echo ">>> Reload backend tanpa downtime"
-            pm2 reload mydrive-backend --update-env
+            pm2 reload MewDrive-backend --update-env
 
             echo ">>> Simpan state PM2"
             pm2 save

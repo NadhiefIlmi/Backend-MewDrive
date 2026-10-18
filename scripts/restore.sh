@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# MyDrive Restore Script
+# MewDrive Restore Script
 #
 # Dipakai kalau VPS crash dan perlu restore ke server baru.
 #
@@ -15,10 +15,10 @@ set -euo pipefail
 
 DB_URL="${DATABASE_URL:-postgres://nadhif:password@localhost:5432/mewdrive}"
 DB_NAME="mewdrive"
-STORAGE_PATH="/var/mydrive/storage/files"
-BACKUP_DIR="/var/backups/mydrive"
+STORAGE_PATH="/var/MewDrive/storage/files"
+BACKUP_DIR="/var/backups/MewDrive"
 B2_REMOTE="b2"
-B2_BUCKET="mydrive-backup"
+B2_BUCKET="MewDrive-backup"
 B2_DB_PATH="${B2_REMOTE}:${B2_BUCKET}/database"
 B2_STORAGE_PATH="${B2_REMOTE}:${B2_BUCKET}/files"
 
@@ -26,7 +26,7 @@ LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
 
 echo ""
 echo "═══════════════════════════════════════════"
-echo "${LOG_PREFIX} MyDrive Restore dimulai"
+echo "${LOG_PREFIX} MewDrive Restore dimulai"
 echo "═══════════════════════════════════════════"
 
 # ─── Tentukan backup yang akan di-restore ────────────────────────────────────
@@ -107,7 +107,7 @@ fi
 
 echo ""
 echo "${LOG_PREFIX} Menjalankan migration..."
-cd /var/mydrive/backend && npm run migrate:prod
+cd /var/MewDrive/backend && npm run migrate:prod
 
 # ─── Selesai ──────────────────────────────────────────────────────────────────
 
