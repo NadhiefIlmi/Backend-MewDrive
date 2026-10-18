@@ -26,8 +26,9 @@ jobs:
             echo ">>> Masuk ke direktori backend"
             cd /var/mydrive/Backend-MewDrive
 
-            echo ">>> Pull latest code dari main"
-            git pull origin main
+            echo ">>> Fetch & reset ke origin/main (bersihkan perubahan lokal di server)"
+            git fetch origin main
+            git reset --hard origin/main
 
             echo ">>> Install dependencies (production only)"
             npm ci --omit=dev
