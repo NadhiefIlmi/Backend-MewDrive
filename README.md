@@ -268,18 +268,6 @@ pm2 logs MewDrive-backend --lines 100               # 100 baris log terakhir
 
 ## Development Notes
 
-### Default Admin Account
-
-Dibuat oleh seed script:
-
-| Field | Value |
-|-------|-------|
-| Email | `nadhiefilmi@gmail.com` |
-| Password | `nadhif123` |
-| Role | ADMIN |
-
-**⚠️ Ganti password ini setelah pertama kali deploy ke production.**
-
 ### Running Tests
 
 ```bash
