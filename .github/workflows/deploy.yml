@@ -37,7 +37,7 @@ jobs:
             NODE_ENV=production node src/database/migrate.js
 
             echo ">>> Reload backend tanpa downtime"
-            pm2 reload mydrive-backend --update-env
+            pm2 reload MewDrive-backend --update-env || pm2 start ecosystem.config.cjs --env production
 
             echo ">>> Simpan state PM2"
             pm2 save
