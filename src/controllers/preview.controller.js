@@ -54,6 +54,9 @@ export const previewFile = async (req, res, next) => {
       return sendError(res, 'FILE_TRASHED', 'File is in trash', 400);
     }
 
+    // ─── Touch last_accessed_at (fire-and-forget for all preview requests) ──
+    fileRepo.touchAccessed(fileId).catch(() => {});
+
     // ─── 4. Tipe tidak bisa di-preview → return metadata ───────────────────
     if (!PREVIEWABLE_TYPES.has(file.mime_type)) {
       return res.json({
@@ -158,10 +161,6 @@ export const previewFile = async (req, res, next) => {
       });
       readStream.pipe(res);
     }
-
-    // ─── 9. Touch last_accessed_at (fire-and-forget) ────────────────────────
-    fileRepo.touchAccessed(fileId).catch(() => {});
-
   } catch (error) {
     next(error);
   }

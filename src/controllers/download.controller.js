@@ -53,6 +53,9 @@ export const downloadFile = async (req, res, next) => {
       return sendError(res, 'FILE_NOT_FOUND', 'File data not found on server', 404);
     }
 
+    // ─── Touch last_accessed_at (fire-and-forget) ───────────────────────────
+    fileRepo.touchAccessed(fileId).catch(() => {});
+
     // ─── 5. ETag & conditional GET ──────────────────────────────────────────
     // ETag dibuat dari id file + updated_at — unik per versi file.
     // Jika client sudah punya versi yang sama (If-None-Match), skip download.
@@ -130,10 +133,6 @@ export const downloadFile = async (req, res, next) => {
       });
       readStream.pipe(res);
     }
-
-    // ─── 8. Touch last_accessed_at (fire-and-forget) ────────────────────────
-    fileRepo.touchAccessed(fileId).catch(() => {});
-
   } catch (error) {
     next(error);
   }
