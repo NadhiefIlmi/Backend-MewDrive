@@ -19,7 +19,7 @@ function buildSummaryReport(summary, highPriority, deadlines, titlePrefix = 'Dai
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   if (total === 0) {
-    return `📋 <b>${titlePrefix} Task Report</b>\n${today}\n\nTidak ada task aktif saat ini. 🎉`;
+    return `📋 <b>${titlePrefix} Task Report</b>\n${today}\n\nTidak ada task aktif saat ini. 🎉\n\n🔗 <a href="https://mewdrive.my.id">Buka MewDrive untuk mengelola task</a>`;
   }
 
   let msg = `📋 <b>${titlePrefix} Task Report (Ringkasan)</b>\n${today}\n\n`;
@@ -28,7 +28,8 @@ function buildSummaryReport(summary, highPriority, deadlines, titlePrefix = 'Dai
   msg += `🔄 In Progress: ${counts.in_progress}\n`;
   msg += `👀 In Review: ${counts.in_review}\n`;
   msg += `✅ Done: ${counts.done}\n`;
-  msg += `Total: ${total} task\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📊 <b>Total: ${total} task</b>\n`;
 
   if (highPriority.length > 0) {
     msg += `\n🔥 <b>Prioritas High / Critical</b>\n`;
@@ -45,18 +46,18 @@ function buildSummaryReport(summary, highPriority, deadlines, titlePrefix = 'Dai
     }
   }
 
-  msg += `\n🔗 <i>Buka MewDrive untuk mengelola task</i>`;
+  msg += `\n🔗 <a href="https://mewdrive.my.id">Buka MewDrive untuk mengelola task</a>`;
   return msg.trim();
 }
 
 // Build teks pesan laporan format Detail (Daftar semua task per status)
-function buildDetailedReport(tasks, titlePrefix = 'Daily') {
+function buildDetailedReport(tasks, deadlines = [], titlePrefix = 'Daily') {
   const today = new Date().toLocaleDateString('id-ID', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 
   if (!tasks || tasks.length === 0) {
-    return `📄 <b>${titlePrefix} Task Report (Detail)</b>\n${today}\n\nBelum ada task yang dibuat. Buat task pertamamu di MewDrive! 🎉`;
+    return `📄 <b>${titlePrefix} Task Report (Detail)</b>\n${today}\n\nBelum ada task yang dibuat. Buat task pertamamu di MewDrive! 🎉\n\n🔗 <a href="https://mewdrive.my.id">Buka MewDrive untuk mengelola task</a>`;
   }
 
   const statusGroups = {
@@ -82,6 +83,7 @@ function buildDetailedReport(tasks, titlePrefix = 'Daily') {
       const meta = [];
       if (item.priority === 'critical') meta.push('🔴 Critical');
       else if (item.priority === 'high') meta.push('🔥 High');
+      else if (item.priority === 'medium') meta.push('🟡 Medium');
       else if (item.priority === 'low') meta.push('🟢 Low');
 
       if (item.due_date) {
@@ -97,11 +99,27 @@ function buildDetailedReport(tasks, titlePrefix = 'Daily') {
     msg += `\n`;
   }
 
+  const upcomingDeadlines = (deadlines && deadlines.length > 0)
+    ? deadlines
+    : tasks
+        .filter(t => t.status !== 'done' && t.due_date && new Date(t.due_date) >= new Date(new Date().toDateString()) && (new Date(t.due_date) - new Date()) <= 3 * 24 * 60 * 60 * 1000)
+        .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+        .slice(0, 5);
+
+  if (upcomingDeadlines.length > 0) {
+    msg += `⏰ <b>Deadline Terdekat</b>\n`;
+    for (const t of upcomingDeadlines) {
+      const d = new Date(t.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      msg += `• ${t.title} — ${d}\n`;
+    }
+    msg += `\n`;
+  }
+
   const doneCount = statusGroups.done.items.length;
   const activeCount = tasks.length - doneCount;
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `📊 <b>Total: ${tasks.length} task</b> (${activeCount} aktif, ${doneCount} selesai)\n`;
-  msg += `🔗 <i>Buka MewDrive untuk mengelola task</i>`;
+  msg += `🔗 <a href="https://mewdrive.my.id">Buka MewDrive untuk mengelola task</a>`;
 
   return msg.trim();
 }
@@ -173,8 +191,11 @@ export class ReportService {
 
       let text = '';
       if (user.report_type === 'detailed') {
-        const { tasks } = await taskRepo.findByUser(user.user_id, { limit: 100 });
-        text = buildDetailedReport(tasks, titlePrefix);
+        const [{ tasks }, deadlines] = await Promise.all([
+          taskRepo.findByUser(user.user_id, { limit: 100 }),
+          taskRepo.getUpcomingDeadlines(user.user_id),
+        ]);
+        text = buildDetailedReport(tasks, deadlines, titlePrefix);
       } else {
         const [summary, highPriority, deadlines] = await Promise.all([
           taskRepo.getSummaryByUser(user.user_id),
